@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 import { useState } from "react";
 import { AxiosError } from "axios";
 import { IAxiosError } from "../interfaces";
+import { useNavigate } from "react-router-dom";
 
 type Inputs = {
   username: string;
@@ -24,13 +25,17 @@ const RegisterPage = () => {
     formState: { errors },
   } = useForm<Inputs>({resolver: yupResolver(registerSchema)});
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate()
 
   const onSubmit: SubmitHandler<Inputs> = async(data) =>{
     setIsLoading(true);
     console.log(data)
     try{
       const {status} = await axiosInstance.post('/auth/local/register', data);
-      status === 200 && toast.success("Successfully Registered");
+      status === 200 && toast.success("Successfully Registered redirecting to Login");
+      setTimeout(()=>{
+        navigate('/login')
+      }, 2000)
       console.log(status);
     }
     catch(e){

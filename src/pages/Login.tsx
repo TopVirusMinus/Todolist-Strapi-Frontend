@@ -16,7 +16,7 @@ const LoginPage = () => {
     identifier: string;
     password: string;
   };
-
+                                                                                                                            
   const {
     register,
     handleSubmit,
@@ -26,10 +26,15 @@ const LoginPage = () => {
 
   const onSubmit: SubmitHandler<Inputs> = async(data) =>{
     setIsLoading(true);
-    console.log(data)
     try{
-      const {status} = await axiosInstance.post('/auth/local/', data);
-      status === 200 && toast.success("Successfully Logged In");
+      const {status, data: resData} = await axiosInstance.post('/auth/local/', data);
+      console.log(data)
+      console.log(resData);
+      localStorage.setItem('loggedInUserInfo', JSON.stringify(resData));
+      status === 200 && toast.success("Login Successful you will be redirected to home page");
+      setTimeout(()=>{
+        location.replace('/')
+      }, 500)
       console.log(status);
     }
     catch(e){
@@ -65,7 +70,7 @@ const LoginPage = () => {
       <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
         {loginData}
         <Button isLoading={isLoading}  fullWidth>  
-        Register
+        Login
         </Button>      
       </form>
     </div>
