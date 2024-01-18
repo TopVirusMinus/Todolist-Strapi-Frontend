@@ -8,3 +8,9 @@ export interface IRegisterFields{
         matches?: RegExp;
     }
 }
+
+export interface IAxiosError{
+    error: {
+        message: string;
+    }
+}

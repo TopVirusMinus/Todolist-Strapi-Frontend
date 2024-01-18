@@ -8,6 +8,8 @@ import { REGISTER_FIELDS } from "../data";
 import axiosInstance from "../config/axios.config";
 import toast from "react-hot-toast";
 import { useState } from "react";
+import { AxiosError } from "axios";
+import { IAxiosError } from "../interfaces";
 
 type Inputs = {
   username: string;
@@ -32,7 +34,8 @@ const RegisterPage = () => {
       console.log(status);
     }
     catch(e){
-      toast.error("failed to register");
+      const errorMsg = e as AxiosError<IAxiosError>
+      toast.error(`${errorMsg.response?.data.error.message}`);
       console.log(e);
     }
     finally{{
