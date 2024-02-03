@@ -12,7 +12,10 @@ const useQueryCustom = ({queryKey, url, config}:IQueryCustom) => {
     return useQuery({
         queryKey,
         queryFn: async () =>{
-          const res = await axiosInstance.get(url, config)
+          const res = await axiosInstance.get(url, {
+            ...config,
+            timeout: 5000,
+          });
           return res.data?.todos
         }
     })

@@ -5,22 +5,36 @@ import Input from "./ui/Input";
 import Modal from "./ui/Modal";
 import Textarea from "./ui/Textarea";
 import axiosInstance from "../config/axios.config";
+import TodosSkeleton from "./ui/TodosSkeleton";
 
 interface ITodo {
   id: number;
   Title: string;
   description: string;
 }
+interface IAddTodo {
+  Title: string;
+  description: string;
+}
+
 const TodoList = () => {
   const defaultTodo: ITodo = {
     id: 0,
     Title: "",
     description: "",
   };
+  const defaultAddTodo: IAddTodo = {
+    Title: "",
+    description: "",
+  };
   const [isEditModelOpen, setIsEditModelOpen] = useState(false);
+  const [isAddModelOpen, setIsAddModelOpen] = useState(false);
   const [isRemoveModelOpen, setIsRemoveModelOpen] = useState(false);
   const [currTodo, setCurrTodo] = useState<ITodo>(defaultTodo);
+  const [currAddTodo, setCurrAddTodo] = useState<IAddTodo>(defaultAddTodo);
+
   const [isEditLoading, setIsEditLoading] = useState<boolean>(false);
+  const [isAddLoading, setIsAddLoading] = useState<boolean>(false);
   const [isRemoveLoading, setIsRemoveLoading] = useState<boolean>(false);
 
   const userLocalStorage = localStorage.getItem("loggedInUserInfo");
@@ -37,9 +51,9 @@ const TodoList = () => {
   });
 
   console.log(data);
-  if (isLoading) return <p>Loading...</p>;
+  if (isLoading) return <TodosSkeleton />;
   if (error) return <p>{error.message}</p>;
-  if (data.length === 0) return <p>No Todos</p>;
+  if (data && data.length === 0) return <p>No Todos</p>;
 
   const handleEdit = (todo: ITodo) => {
     console.log("TODO EDIT", todo.Title);
@@ -64,6 +78,11 @@ const TodoList = () => {
   const onCloseEditModal = () => {
     setCurrTodo(defaultTodo);
     setIsEditModelOpen(false);
+  };
+
+  const onCloseAddModal = () => {
+    setCurrTodo(defaultTodo);
+    setIsAddModelOpen(false);
   };
 
   const onCloseRemoveModal = () => {
@@ -99,6 +118,30 @@ const TodoList = () => {
     console.log("submitted");
   };
 
+  const handleAddSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const { Title, description } = currAddTodo;
+    try {
+      setIsAddLoading(true);
+      axiosInstance.post(
+        "todos/",
+        { data: { Title, description } },
+        {
+          headers: {
+            Authorization: `Bearer ${userInfo.jwt}`,
+          },
+        }
+      );
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsAddLoading(false);
+    }
+
+    onCloseAddModal();
+    console.log("Added new todo");
+  };
+
   const handleRemoveSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const { id } = currTodo;
@@ -128,9 +171,23 @@ const TodoList = () => {
     });
   };
 
+  const handleAddTodo = (
+    e: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
+  ) => {
+    setCurrAddTodo({
+      ...currAddTodo,
+      [e.target.name]: e.target.value,
+    });
+  };
+
   return (
     <div className="space-y-1 ">
-      {data.length > 0 &&
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Todos</h1>
+        <Button onClick={() => setIsAddModelOpen(true)}>Add</Button>
+      </div>
+      {data &&
+        data.length > 0 &&
         data.map((todo: ITodo) => (
           <div
             className="flex items-center justify-between hover:bg-gray-100 duration-300 p-3 rounded-md even:bg-gray-100"
@@ -157,9 +214,8 @@ const TodoList = () => {
         closeModal={onCloseRemoveModal}
         title="Are you sure you want to remove this todo item?"
       >
-        {" "}
         <form className="space-x-2 mt-2" onSubmit={handleRemoveSubmit}>
-          <Button variant={"cancel"} onClick={onCloseEditModal}>
+          <Button variant={"cancel"} onClick={onCloseRemoveModal}>
             Cancel
           </Button>
           <Button variant={"danger"} isLoading={isRemoveLoading}>
@@ -186,6 +242,22 @@ const TodoList = () => {
           <div className="space-x-2 mt-2">
             <Button isLoading={isEditLoading}>Update</Button>
             <Button variant={"cancel"} onClick={onCloseEditModal}>
+              Cancel
+            </Button>
+          </div>
+        </form>
+      </Modal>
+      <Modal
+        isOpen={isAddModelOpen}
+        closeModal={onCloseAddModal}
+        title="Add new todo"
+      >
+        <form className="space-y-2" onSubmit={handleAddSubmit}>
+          <Input name="Title" onChange={handleAddTodo} />
+          <Textarea name="description" onChange={handleAddTodo} />
+          <div className="space-x-2 mt-2">
+            <Button isLoading={isEditLoading}>Add</Button>
+            <Button variant={"cancel"} onClick={onCloseAddModal}>
               Cancel
             </Button>
           </div>
