@@ -122,13 +122,14 @@ const TodoList = () => {
       setIsAddLoading(true);
       axiosInstance.post(
         "todos/",
-        { data: { Title, description } },
+        { data: { Title, description, user: [userInfo.user.id] } },
         {
           headers: {
             Authorization: `Bearer ${userInfo.jwt}`,
           },
         }
       );
+      setQueryVersion((prev) => prev + 1);
     } catch (error) {
       console.log(error);
     } finally {
@@ -256,7 +257,7 @@ const TodoList = () => {
           <Textarea name="description" onChange={handleAddTodo} />
           <div className="space-x-2 mt-2">
             <Button isLoading={isEditLoading}>Add</Button>
-            <Button variant={"cancel"} onClick={onCloseAddModal}>
+            <Button variant={"cancel"} type="button" onClick={onCloseAddModal}>
               Cancel
             </Button>
           </div>
