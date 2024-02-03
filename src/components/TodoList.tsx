@@ -6,6 +6,7 @@ import Modal from "./ui/Modal";
 import Textarea from "./ui/Textarea";
 import axiosInstance from "../config/axios.config";
 import TodosSkeleton from "./ui/TodosSkeleton";
+import { faker } from "@faker-js/faker";
 
 interface ITodo {
   id: number;
@@ -51,7 +52,6 @@ const TodoList = () => {
   });
 
   console.log(data);
-  if (isLoading) return <TodosSkeleton />;
   if (error) return <p>{error.message}</p>;
 
   const handleEdit = (todo: ITodo) => {
@@ -90,12 +90,12 @@ const TodoList = () => {
     setIsEditModelOpen((prev) => !prev);
   };
 
-  const handleEditSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleEditSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const { id, Title, description } = currTodo;
     try {
       setIsEditLoading(true);
-      axiosInstance.put(
+      await axiosInstance.put(
         `/todos/${id}`,
         { data: { Title, description } },
         {
@@ -115,12 +115,12 @@ const TodoList = () => {
     console.log("submitted");
   };
 
-  const handleAddSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleAddSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const { Title, description } = currAddTodo;
     try {
       setIsAddLoading(true);
-      axiosInstance.post(
+      await axiosInstance.post(
         "todos/",
         { data: { Title, description, user: [userInfo.user.id] } },
         {
@@ -140,12 +140,12 @@ const TodoList = () => {
     console.log("Added new todo");
   };
 
-  const handleRemoveSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleRemoveSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const { id } = currTodo;
     try {
       setIsRemoveLoading(true);
-      axiosInstance.delete(`/todos/${id}`, {
+      await axiosInstance.delete(`/todos/${id}`, {
         headers: {
           Authorization: `Bearer ${userInfo.jwt}`,
         },
@@ -179,11 +179,41 @@ const TodoList = () => {
     });
   };
 
+  const generateTodos = async () => {
+    for (let i = 0; i < 100; i++) {
+      try {
+        await axiosInstance.post(
+          "todos/",
+          {
+            data: {
+              Title: faker.word.words(5),
+              description: faker.lorem.paragraph(2),
+              user: [userInfo.user.id],
+            },
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${userInfo.jwt}`,
+            },
+          }
+        );
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    setQueryVersion((prev) => prev + 1);
+  };
+
   return (
     <div className="space-y-1 ">
+      <div className="flex justify-center gap-4">
+        <Button onClick={() => setIsAddModelOpen(true)}>Add New Todo</Button>
+        <Button variant={"outline"} onClick={() => generateTodos()}>
+          Generate A Todo
+        </Button>
+      </div>
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Todos</h1>
-        <Button onClick={() => setIsAddModelOpen(true)}>Add</Button>
       </div>
       {data && data.length > 0 ? (
         data.map((todo: ITodo) => (
@@ -206,6 +236,8 @@ const TodoList = () => {
             </div>
           </div>
         ))
+      ) : isLoading ? (
+        <TodosSkeleton />
       ) : (
         <p>No Todos</p>
       )}
@@ -256,7 +288,7 @@ const TodoList = () => {
           <Input name="Title" onChange={handleAddTodo} />
           <Textarea name="description" onChange={handleAddTodo} />
           <div className="space-x-2 mt-2">
-            <Button isLoading={isEditLoading}>Add</Button>
+            <Button isLoading={isAddLoading}>Add</Button>
             <Button variant={"cancel"} type="button" onClick={onCloseAddModal}>
               Cancel
             </Button>
