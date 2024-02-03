@@ -32,7 +32,7 @@ const TodoList = () => {
   const [isRemoveModelOpen, setIsRemoveModelOpen] = useState(false);
   const [currTodo, setCurrTodo] = useState<ITodo>(defaultTodo);
   const [currAddTodo, setCurrAddTodo] = useState<IAddTodo>(defaultAddTodo);
-
+  const [queryVersion, setQueryVersion] = useState<number>(0);
   const [isEditLoading, setIsEditLoading] = useState<boolean>(false);
   const [isAddLoading, setIsAddLoading] = useState<boolean>(false);
   const [isRemoveLoading, setIsRemoveLoading] = useState<boolean>(false);
@@ -41,7 +41,7 @@ const TodoList = () => {
   const userInfo = userLocalStorage && JSON.parse(userLocalStorage);
 
   const { isLoading, error, data } = useQueryCustom({
-    queryKey: ["todoList", `${currTodo.id}`],
+    queryKey: ["todoList", `${queryVersion}`],
     url: "/users/me/?populate=todos",
     config: {
       headers: {
@@ -53,7 +53,6 @@ const TodoList = () => {
   console.log(data);
   if (isLoading) return <TodosSkeleton />;
   if (error) return <p>{error.message}</p>;
-  if (data && data.length === 0) return <p>No Todos</p>;
 
   const handleEdit = (todo: ITodo) => {
     console.log("TODO EDIT", todo.Title);
@@ -76,17 +75,14 @@ const TodoList = () => {
   };
 
   const onCloseEditModal = () => {
-    setCurrTodo(defaultTodo);
     setIsEditModelOpen(false);
   };
 
   const onCloseAddModal = () => {
-    setCurrTodo(defaultTodo);
     setIsAddModelOpen(false);
   };
 
   const onCloseRemoveModal = () => {
-    setCurrTodo(defaultTodo);
     setIsRemoveModelOpen(false);
   };
 
@@ -108,6 +104,7 @@ const TodoList = () => {
           },
         }
       );
+      setQueryVersion((prev) => prev + 1);
     } catch (error) {
       console.log(error);
     } finally {
@@ -152,6 +149,7 @@ const TodoList = () => {
           Authorization: `Bearer ${userInfo.jwt}`,
         },
       });
+      setQueryVersion((prev) => prev + 1);
     } catch (error) {
       console.log(error);
     } finally {
@@ -186,8 +184,7 @@ const TodoList = () => {
         <h1 className="text-2xl font-semibold">Todos</h1>
         <Button onClick={() => setIsAddModelOpen(true)}>Add</Button>
       </div>
-      {data &&
-        data.length > 0 &&
+      {data && data.length > 0 ? (
         data.map((todo: ITodo) => (
           <div
             className="flex items-center justify-between hover:bg-gray-100 duration-300 p-3 rounded-md even:bg-gray-100"
@@ -207,15 +204,17 @@ const TodoList = () => {
               </Button>
             </div>
           </div>
-        ))}
-
+        ))
+      ) : (
+        <p>No Todos</p>
+      )}
       <Modal
         isOpen={isRemoveModelOpen}
         closeModal={onCloseRemoveModal}
         title="Are you sure you want to remove this todo item?"
       >
         <form className="space-x-2 mt-2" onSubmit={handleRemoveSubmit}>
-          <Button variant={"cancel"} onClick={onCloseRemoveModal}>
+          <Button variant={"cancel"} type="button" onClick={onCloseRemoveModal}>
             Cancel
           </Button>
           <Button variant={"danger"} isLoading={isRemoveLoading}>
@@ -241,7 +240,7 @@ const TodoList = () => {
           />
           <div className="space-x-2 mt-2">
             <Button isLoading={isEditLoading}>Update</Button>
-            <Button variant={"cancel"} onClick={onCloseEditModal}>
+            <Button variant={"cancel"} type="button" onClick={onCloseEditModal}>
               Cancel
             </Button>
           </div>
