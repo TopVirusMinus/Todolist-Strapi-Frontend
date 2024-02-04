@@ -7,6 +7,7 @@ import HomePage from "../pages";
 import LoginPage from "../pages/Login";
 import RegisterPage from "../pages/Register";
 import Profile from "../pages/Profile";
+import TodosPage from "../pages/Todos";
 
 const storageKey = "loggedInUserInfo";
 const userDataString = localStorage.getItem(storageKey);
@@ -21,7 +22,11 @@ const router = createBrowserRouter(
         <Route
           index
           element={
-            <ProtectedRoute isAllowed={userData?.jwt} redirectPath="/login" data={userData}>
+            <ProtectedRoute
+              isAllowed={userData?.jwt}
+              redirectPath="/login"
+              data={userData}
+            >
               <HomePage />
             </ProtectedRoute>
           }
@@ -29,15 +34,35 @@ const router = createBrowserRouter(
         <Route
           path="profile"
           element={
-            <ProtectedRoute isAllowed={userData?.jwt} redirectPath="/profile" data={userData}>
+            <ProtectedRoute
+              isAllowed={userData?.jwt}
+              redirectPath="/profile"
+              data={userData}
+            >
               <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="todos"
+          element={
+            <ProtectedRoute
+              isAllowed={userData?.jwt}
+              redirectPath="/profile"
+              data={userData}
+            >
+              <TodosPage />
             </ProtectedRoute>
           }
         />
         <Route
           path="login"
           element={
-            <ProtectedRoute isAllowed={!userData?.jwt} redirectPath="/" data={userData}>
+            <ProtectedRoute
+              isAllowed={!userData?.jwt}
+              redirectPath="/"
+              data={userData}
+            >
               <LoginPage />
             </ProtectedRoute>
           }
@@ -45,7 +70,11 @@ const router = createBrowserRouter(
         <Route
           path="register"
           element={
-            <ProtectedRoute isAllowed={!userData?.jwt} redirectPath="/login" data={userData}>
+            <ProtectedRoute
+              isAllowed={!userData?.jwt}
+              redirectPath="/login"
+              data={userData}
+            >
               <RegisterPage />
             </ProtectedRoute>
           }

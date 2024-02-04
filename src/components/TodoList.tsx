@@ -50,7 +50,6 @@ const TodoList = () => {
       },
     },
   });
-
   console.log(data);
   if (error) return <p>{error.message}</p>;
 
@@ -205,7 +204,7 @@ const TodoList = () => {
   };
 
   return (
-    <div className="space-y-1 ">
+    <div className="space-y-1 mb-2">
       <div className="flex justify-center gap-4">
         <Button onClick={() => setIsAddModelOpen(true)}>Add New Todo</Button>
         <Button variant={"outline"} onClick={() => generateTodos()}>
@@ -215,8 +214,8 @@ const TodoList = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Todos</h1>
       </div>
-      {data && data.length > 0 ? (
-        data.map((todo: ITodo) => (
+      {data?.todos?.length > 0 ? (
+        data.todos.map((todo: ITodo) => (
           <div
             className="flex items-center justify-between hover:bg-gray-100 duration-300 p-3 rounded-md even:bg-gray-100"
             key={todo.id}

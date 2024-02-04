@@ -16,7 +16,7 @@ const useQueryCustom = ({queryKey, url, config}:IQueryCustom) => {
             ...config,
             timeout: 5000,
           });
-          return res.data?.todos
+          return res.data;
         }
     })
 }
